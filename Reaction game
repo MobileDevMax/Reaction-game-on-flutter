@@ -1,0 +1,101 @@
+import 'dart:async';
+import 'dart:math';
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(ReactionGameApp());
+}
+
+class ReactionGameApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Reaction game',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: ReactionGamePage(),
+    );
+  }
+}
+
+class ReactionGamePage extends StatefulWidget {
+  @override
+  _ReactionGamePageState createState() => _ReactionGamePageState();
+}
+
+class _ReactionGamePageState extends State<ReactionGamePage> {
+  bool _isButtonVisible = false;
+  String _reactionTime = '';
+  int _startTime = 0;
+  Timer? _timer;
+
+  void _startGame() {
+    setState(() {
+      _reactionTime = ''; // Reset reaction time
+      _isButtonVisible = false; // Hide button
+    });
+
+    // Delay before showing button
+    _timer = Timer(Duration(seconds: 2 + Random().nextInt(3)), () {
+      setState(() {
+        _isButtonVisible = true; // Show button
+        _startTime = DateTime.now().millisecondsSinceEpoch; // Remember the start time
+      });
+    });
+  }
+
+  void _stopTimer() {
+    if (_timer != null && _isButtonVisible) {
+      _timer!.cancel();
+      _timer = null;
+
+      // Let's measure the reaction time
+      final reactionTime = DateTime.now().millisecondsSinceEpoch;
+      final duration = reactionTime - _startTime;
+
+      setState(() {
+        _reactionTime = 'Reaction time: ${duration} ms';
+        _isButtonVisible = false; // Hide button after clicking
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Reaction game')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_reactionTime.isNotEmpty)
+              Text(
+                _reactionTime,
+                style: TextStyle(fontSize: 24),
+              ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _startGame,
+              child: Text('Start game'),
+            ),
+            SizedBox(height: 20),
+            if (_isButtonVisible)
+              GestureDetector(
+                onTap: _stopTimer,
+                child: Container(
+                  width: 200,
+                  height: 100,
+                  color: Colors.green,
+                  child: Center(
+                    child: Text(
+                      'Press me!',
+                      style: TextStyle(fontSize: 24, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
